@@ -30,7 +30,13 @@
 /* SSD1331 commands */
 #define SSD1331_CMD_DRAWLINE 		0x21
 #define SSD1331_CMD_DRAWRECT 		0x22
+#define SSD1331_CMD_COPY	 		0x23
+#define SSD1331_CMD_DIM 			0x24
+#define SSD1331_CMD_CLEAR 			0x25
 #define SSD1331_CMD_FILL 			0x26
+#define SSD1331_CMD_SCROLL 			0x27
+#define SSD1331_CMD_SCROLLDEACT		0x2E
+#define SSD1331_CMD_SCROLLACT		0x2F
 #define SSD1331_CMD_SETCOLUMN 		0x15
 #define SSD1331_CMD_SETROW    		0x75
 #define SSD1331_CMD_CONTRASTA 		0x81
@@ -163,6 +169,9 @@ void spi_data_byte(uint8_t data)
 	OLED_CS_HIGH();
 }
 
+/*
+ * Initialize the display
+ */
 void ssd1331_init(void)
 {
 	/* init the hardware interfaces */
@@ -255,6 +264,9 @@ uint16_t ssd1331_getcolor(uint8_t r, uint8_t g, uint8_t b)
 	return c;
 }
 
+/*
+ * send color pixel value to display
+ */
 void ssd1331_setcolor(uint16_t color)
 {
 	/* set DC high for data */
@@ -311,6 +323,9 @@ void ssd1331_drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t c
 	systick_delayms(SSD1331_DELAYS_HWLINE);  
 }
 
+/*
+ * draw rectangle - filled or unfilled
+ */
 void ssd1331_drawRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t fill, uint16_t outcolor, uint16_t fillcolor)
 {	
 	/* Boundary check */
@@ -444,8 +459,11 @@ void ssd1331_hsv2rgb(uint8_t rgb[], uint8_t hsv[])
 			break;
 	}
 }
-/* Draw character to the display buffer */
-void ssd1331_drawchar(uint8_t x, uint8_t y, uint8_t chr, uint16_t fgcolor, uint16_t bgcolor)
+
+/*
+ * Draw character to the display
+ */
+void ssd1331_drawchar(uint8_t x, uint8_t y, char chr, uint16_t fgcolor, uint16_t bgcolor)
 {
 	uint16_t i, j, col;
 	uint8_t d;
@@ -468,7 +486,9 @@ void ssd1331_drawchar(uint8_t x, uint8_t y, uint8_t chr, uint16_t fgcolor, uint1
 	}
 }
 
-/* draw a string to the display */
+/*
+ * draw a string to the display
+ */
 void ssd1331_drawstr(uint8_t x, uint8_t y, char *str, uint16_t fgcolor, uint16_t bgcolor)
 {
 	uint8_t c;
@@ -480,5 +500,54 @@ void ssd1331_drawstr(uint8_t x, uint8_t y, char *str, uint16_t fgcolor, uint16_t
 		if(x>120)
 			break;
 	}
+}
+
+/*
+ * scrolling test
+ */
+void ssd1331_scrolltest(void)
+{
+	spi_command_byte(SSD1331_CMD_SCROLL);
+	spi_command_byte(0);
+	spi_command_byte(0);
+	spi_command_byte(64);
+	spi_command_byte(1);
+	spi_command_byte(0);
+	spi_command_byte(SSD1331_CMD_SCROLLACT);
+}
+
+/*
+ * copy rectangle
+ */
+void ssd1331_copyRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t xd, uint8_t yd)
+{	
+	/* Boundary check */
+	if ((y0 >= SSD1331_HEIGHT) && (y1 >= SSD1331_HEIGHT))
+		return;
+	if ((x0 >= SSD1331_WIDTH) && (x1 >= SSD1331_WIDTH))
+		return;	
+	if (x0 >= SSD1331_WIDTH)
+		x0 = SSD1331_WIDTH - 1;
+	if (y0 >= SSD1331_HEIGHT)
+		y0 = SSD1331_HEIGHT - 1;
+	if (x1 >= SSD1331_WIDTH)
+		x1 = SSD1331_WIDTH - 1;
+	if (y1 >= SSD1331_HEIGHT)
+		y1 = SSD1331_HEIGHT - 1;
+	if (xd >= SSD1331_WIDTH)
+		xd = SSD1331_WIDTH - 1;
+	if (yd >= SSD1331_HEIGHT)
+		yd = SSD1331_HEIGHT - 1;
+
+	spi_command_byte(SSD1331_CMD_COPY);
+	spi_command_byte(x0 & 0x7F);	// Starting column
+	spi_command_byte(y0 & 0x3F);	// Starting row
+	spi_command_byte(x1 & 0x7F);	// End column
+	spi_command_byte(y1 & 0x3F);	// End row
+	spi_command_byte(xd & 0x7F);	// Dest column
+	spi_command_byte(yd & 0x3F);	// Dest row
+
+	// Delay while the copy completes
+	systick_delayms(SSD1331_DELAYS_HWFILL); 
 }
 

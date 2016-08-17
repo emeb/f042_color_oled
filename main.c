@@ -13,6 +13,7 @@
 
 int main(void)
 {
+	uint8_t y;
 	//uint8_t x, y, x0, y0, x1, y1, r, g, b;
 	uint8_t x0[NUM_LINES], y0[NUM_LINES], x1[NUM_LINES], y1[NUM_LINES];
 	uint8_t dx0, dy0, dx1, dy1, idx, nidx, erase;
@@ -164,6 +165,16 @@ int main(void)
 	ssd1331_drawstr(0, 24, "123456789ABC", color, 0);
 	color = ssd1331_getcolor(0, 255, 255);
 	ssd1331_drawstr(0, 32, "inverse.....", 0, color);
+	//ssd1331_scrolltest();
+	
+	/* test copyRect */
+	color = ssd1331_getcolor(255, 0, 255);
+	for(y=0;y<8;y++)
+	{
+		systick_delayms(200);
+		ssd1331_copyRect(0, 8, SSD1331_WIDTH, SSD1331_HEIGHT, 0, 0);
+		ssd1331_drawstr(0, 56, "scroll", color, 0);
+	}
 #endif
 
 	/* Loop forever */
