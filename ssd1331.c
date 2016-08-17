@@ -338,3 +338,88 @@ void ssd1331_fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t o
   // Delay while the fill completes
   systick_delayms(SSD1331_DELAYS_HWFILL); 
 }
+
+/*
+ * Convert HSV triple to RGB triple
+ * use algorithm from
+ * http://en.wikipedia.org/wiki/HSL_and_HSV#Converting_to_RGB
+ */
+void ssd1331_hsv2rgb(uint8_t rgb[], uint8_t hsv[])
+{
+	uint16_t C;
+	int16_t Hprime, Cscl;
+	uint8_t hs, X, m;
+	
+	/* default */
+	rgb[0] = 0;
+	rgb[1] = 0;
+	rgb[2] = 0;
+	
+	/* calcs are easy if v = 0 */
+	if(hsv[2] == 0)
+		return;
+	
+	/* C is the chroma component */
+	C = ((uint16_t)hsv[1] * (uint16_t)hsv[2])>>8;
+	
+	/* Hprime is fixed point with range 0-5.99 representing hue sector */
+	Hprime = (int16_t)hsv[0] * 6;
+	
+	/* get intermediate value X */
+	Cscl = (Hprime%512)-256;
+	Cscl = Cscl < 0 ? -Cscl : Cscl;
+	Cscl = 256 - Cscl;
+	X = ((uint16_t)C * Cscl)>>8;
+	
+	/* m is value offset */
+	m = hsv[2] - C;
+	
+	/* get the hue sector (1 of 6) */
+	hs = (Hprime)>>8;
+	
+	/* map by sector */
+	switch(hs)
+	{
+		case 0:
+			/* Red -> Yellow sector */
+			rgb[0] = C + m;
+			rgb[1] = X + m;
+			rgb[2] = m;
+			break;
+		
+		case 1:
+			/* Yellow -> Green sector */
+			rgb[0] = X + m;
+			rgb[1] = C + m;
+			rgb[2] = m;
+			break;
+		
+		case 2:
+			/* Green -> Cyan sector */
+			rgb[0] = m;
+			rgb[1] = C + m;
+			rgb[2] = X + m;
+			break;
+		
+		case 3:
+			/* Cyan -> Blue sector */
+			rgb[0] = m;
+			rgb[1] = X + m;
+			rgb[2] = C + m;
+			break;
+		
+		case 4:
+			/* Blue -> Magenta sector */
+			rgb[0] = X + m;
+			rgb[1] = m;
+			rgb[2] = C + m;
+			break;
+		
+		case 5:
+			/* Magenta -> Red sector */
+			rgb[0] = C + m;
+			rgb[1] = m;
+			rgb[2] = X + m;
+			break;
+	}
+}

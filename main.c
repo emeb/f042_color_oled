@@ -9,9 +9,14 @@
 #include "systick.h"
 #include "ssd1331.h"
 
+#define NUM_LINES 64
+
 int main(void)
 {
-	uint8_t x, y, x0, y0, x1, y1, r, g, b;
+	//uint8_t x, y, x0, y0, x1, y1, r, g, b;
+	uint8_t x0[NUM_LINES], y0[NUM_LINES], x1[NUM_LINES], y1[NUM_LINES];
+	uint8_t dx0, dy0, dx1, dy1, idx, nidx, erase;
+	uint8_t rgb[3], hsv[3];
 	uint16_t color;
 	
 	/* initialize the hardware */
@@ -67,7 +72,7 @@ int main(void)
 	}
 #endif
 	
-#if 1
+#if 0
 	/* clear and draw lines */
 	for(;;)
 	{
@@ -96,6 +101,51 @@ int main(void)
 			}
 			systick_delayms(100);
 		}
+	}
+#endif
+
+#if 1
+	/* qix */
+	ssd1331_fillRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 0, 0);
+	hsv[0] = 0;
+	hsv[1] = 255;
+	hsv[2] = 255;
+	idx = 0;
+	erase = 0;
+	x0[0] = rand()%SSD1331_WIDTH;
+	x1[0] = rand()%SSD1331_WIDTH;
+	y0[0] = rand()%SSD1331_HEIGHT;
+	y1[0] = rand()%SSD1331_HEIGHT;
+	dx0 = (rand()&1)*2-1;
+	dy0 = (rand()&1)*2-1;
+	dx1 = (rand()&1)*2-1;
+	dy1 = (rand()&1)*2-1;
+	for(;;)
+	{
+		ssd1331_hsv2rgb(rgb, hsv);
+		color = ssd1331_getcolor(rgb[0], rgb[1], rgb[2]);
+		ssd1331_drawLine(x0[idx], y0[idx], x1[idx], y1[idx], color);
+		nidx = (idx+1)%NUM_LINES;
+		if(nidx == 0) erase = 1;
+		if(erase)
+		{
+			systick_delayms(10);
+			ssd1331_drawLine(x0[nidx], y0[nidx], x1[nidx], y1[nidx], 0);
+		}
+		hsv[0]++;
+		x0[nidx] = x0[idx]+dx0;
+		y0[nidx] = y0[idx]+dy0;
+		x1[nidx] = x1[idx]+dx1;
+		y1[nidx] = y1[idx]+dy1;
+		if(x0[nidx] == 0) dx0 = -dx0;
+		if(x1[nidx] == 0) dx1 = -dx1;
+		if(x0[nidx] == SSD1331_WIDTH-1) dx0 = -dx0;
+		if(x1[nidx] == SSD1331_WIDTH-1) dx1 = -dx1;
+		if(y0[nidx] == 0) dy0 = -dy0;
+		if(y1[nidx] == 0) dy1 = -dy1;
+		if(y0[nidx] == SSD1331_HEIGHT-1) dy0 = -dy0;
+		if(y1[nidx] == SSD1331_HEIGHT-1) dy1 = -dy1; // 1 l 
+		idx = nidx;
 	}
 #endif
 	
