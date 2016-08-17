@@ -104,7 +104,7 @@ int main(void)
 	}
 #endif
 
-#if 1
+#if 0
 	/* qix */
 	ssd1331_drawRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 1, 0, 0);
 	hsv[0] = 0;
@@ -150,7 +150,22 @@ int main(void)
 		idx = nidx;
 	}
 #endif
-	
+
+#if 1
+	/* test text */
+	ssd1331_drawRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 1, 0, 0);
+	color = ssd1331_getcolor(255, 0, 0);
+	ssd1331_drawstr(0,  0, "Hello World!", color, 0);
+	color = ssd1331_getcolor(0, 255, 0);
+	ssd1331_drawstr(0,  8, "This is a   ", color, 0);
+	color = ssd1331_getcolor(0, 255, 0);
+	ssd1331_drawstr(0, 16, "test.       ", color, 0);
+	color = ssd1331_getcolor(0, 0, 255);
+	ssd1331_drawstr(0, 24, "123456789ABC", color, 0);
+	color = ssd1331_getcolor(0, 255, 255);
+	ssd1331_drawstr(0, 32, "inverse.....", 0, color);
+#endif
+
 	/* Loop forever */
 	while(1)
 	{

@@ -5,6 +5,7 @@
  */
 
 #include "ssd1331.h"
+#include "font_8x8.h"
 #include "systick.h"
 
 /* macros to define pins */
@@ -270,6 +271,18 @@ void ssd1331_setcolor(uint16_t color)
 	OLED_CS_HIGH();
 }
 
+/*
+ * draw a pixel @ x, y of color
+ */
+void ssd1331_drawPixel(uint8_t x, uint8_t y, uint16_t color)
+{
+	ssd1331_xy(x, y);
+	ssd1331_setcolor(color);
+}
+
+/*
+ * draw a line from x0,y0 to x1,y1 of color
+ */
 void ssd1331_drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color)
 {	
 	// Boundary check
@@ -431,3 +444,41 @@ void ssd1331_hsv2rgb(uint8_t rgb[], uint8_t hsv[])
 			break;
 	}
 }
+/* Draw character to the display buffer */
+void ssd1331_drawchar(uint8_t x, uint8_t y, uint8_t chr, uint16_t fgcolor, uint16_t bgcolor)
+{
+	uint16_t i, j, col;
+	uint8_t d;
+	
+	for(i=0;i<8;i++)
+	{
+		d = fontdata[(chr<<3)+i];
+		for(j=0;j<8;j++)
+		{
+			if(d&0x80)
+				col = fgcolor;
+			else
+				col = bgcolor;
+			
+			ssd1331_drawPixel(x+j, y+i, col);
+			
+			// next bit
+			d <<= 1;
+		}
+	}
+}
+
+/* draw a string to the display */
+void ssd1331_drawstr(uint8_t x, uint8_t y, char *str, uint16_t fgcolor, uint16_t bgcolor)
+{
+	uint8_t c;
+	
+	while((c=*str++))
+	{
+		ssd1331_drawchar(x, y, c, fgcolor, bgcolor);
+		x += 8;
+		if(x>120)
+			break;
+	}
+}
+
