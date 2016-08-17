@@ -270,73 +270,81 @@ void ssd1331_setcolor(uint16_t color)
 	OLED_CS_HIGH();
 }
 
-void ssd1331_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color)
+void ssd1331_drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color)
 {	
-  // Boundary check
-  if ((y0 >= SSD1331_HEIGHT) && (y1 >= SSD1331_HEIGHT))
-	return;
-  if ((x0 >= SSD1331_WIDTH) && (x1 >= SSD1331_WIDTH))
-	return;	
-  if (x0 >= SSD1331_WIDTH)
-    x0 = SSD1331_WIDTH - 1;
-  if (y0 >= SSD1331_HEIGHT)
-    y0 = SSD1331_HEIGHT - 1;
-  if (x1 >= SSD1331_WIDTH)
-    x1 = SSD1331_WIDTH - 1;
-  if (y1 >= SSD1331_HEIGHT)
-    y1 = SSD1331_HEIGHT - 1;
-  
-  spi_command_byte(SSD1331_CMD_DRAWLINE);
-  spi_command_byte(x0);
-  spi_command_byte(y0);
-  spi_command_byte(x1);
-  spi_command_byte(y1);
-  systick_delayms(SSD1331_DELAYS_HWLINE);  
-  spi_command_byte((uint8_t)((color >> 11) << 1));
-  spi_command_byte((uint8_t)((color >> 5) & 0x3F));
-  spi_command_byte((uint8_t)((color << 1) & 0x3F));
-  systick_delayms(SSD1331_DELAYS_HWLINE);  
+	// Boundary check
+	if ((y0 >= SSD1331_HEIGHT) && (y1 >= SSD1331_HEIGHT))
+		return;
+	if ((x0 >= SSD1331_WIDTH) && (x1 >= SSD1331_WIDTH))
+		return;	
+	if (x0 >= SSD1331_WIDTH)
+		x0 = SSD1331_WIDTH - 1;
+	if (y0 >= SSD1331_HEIGHT)
+		y0 = SSD1331_HEIGHT - 1;
+	if (x1 >= SSD1331_WIDTH)
+		x1 = SSD1331_WIDTH - 1;
+	if (y1 >= SSD1331_HEIGHT)
+		y1 = SSD1331_HEIGHT - 1;
+
+	spi_command_byte(SSD1331_CMD_DRAWLINE);
+	spi_command_byte(x0);
+	spi_command_byte(y0);
+	spi_command_byte(x1);
+	spi_command_byte(y1);
+	systick_delayms(SSD1331_DELAYS_HWLINE);  
+	spi_command_byte((uint8_t)((color >> 11) << 1));
+	spi_command_byte((uint8_t)((color >> 5) & 0x3F));
+	spi_command_byte((uint8_t)((color << 1) & 0x3F));
+	systick_delayms(SSD1331_DELAYS_HWLINE);  
 }
 
-void ssd1331_fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t outcolor, uint16_t fillcolor) 
-{
-  // x,y Bounds check
-  if ((x >= SSD1331_WIDTH) || (y >= SSD1331_HEIGHT))
-	return;
+void ssd1331_drawRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t fill, uint16_t outcolor, uint16_t fillcolor)
+{	
+	/* Boundary check */
+	if ((y0 >= SSD1331_HEIGHT) && (y1 >= SSD1331_HEIGHT))
+		return;
+	if ((x0 >= SSD1331_WIDTH) && (x1 >= SSD1331_WIDTH))
+		return;	
+	if (x0 >= SSD1331_WIDTH)
+		x0 = SSD1331_WIDTH - 1;
+	if (y0 >= SSD1331_HEIGHT)
+		y0 = SSD1331_HEIGHT - 1;
+	if (x1 >= SSD1331_WIDTH)
+		x1 = SSD1331_WIDTH - 1;
+	if (y1 >= SSD1331_HEIGHT)
+		y1 = SSD1331_HEIGHT - 1;
 
-  // h bounds check
-  if (y+h > SSD1331_HEIGHT)
-  {
-    h = SSD1331_HEIGHT - y;
-  }
+	if(fill)
+	{
+		/* fill */
+		spi_command_byte(SSD1331_CMD_FILL);
+		spi_command_byte(0x01);
+	}
+	else
+	{
+		/* no fill */
+		spi_command_byte(SSD1331_CMD_FILL);
+		spi_command_byte(0x00);
+	}
 
-  // w bounds check
-  if (x+w > SSD1331_WIDTH)
-  {
-    w = SSD1331_WIDTH - x;
-  }
-  
-  // fill!
-  spi_command_byte(SSD1331_CMD_FILL);
-  spi_command_byte(0x01);
+	spi_command_byte(SSD1331_CMD_DRAWRECT);
+	spi_command_byte(x0 & 0x7F);	// Starting column
+	spi_command_byte(y0 & 0x3F);	// Starting row
+	spi_command_byte(x1 & 0x7F);	// End column
+	spi_command_byte(y1 & 0x3F);	// End row
 
-  spi_command_byte(SSD1331_CMD_DRAWRECT);
-  spi_command_byte(x & 0xFF);							// Starting column
-  spi_command_byte(y & 0xFF);							// Starting row
-  spi_command_byte((x+w-1) & 0xFF);	// End column
-  spi_command_byte((y+h-1) & 0xFF);	// End row
-  
-  // Outline color
-  spi_command_byte((uint8_t)((outcolor >> 11) << 1));
-  spi_command_byte((uint8_t)((outcolor >> 5) & 0x3F));
-  spi_command_byte((uint8_t)((outcolor << 1) & 0x3F));
-  // Fill color
-  spi_command_byte((uint8_t)((fillcolor >> 11) << 1));
-  spi_command_byte((uint8_t)((fillcolor >> 5) & 0x3F));
-  spi_command_byte((uint8_t)((fillcolor << 1) & 0x3F));
- 
-  // Delay while the fill completes
-  systick_delayms(SSD1331_DELAYS_HWFILL); 
+	// Outline color
+	spi_command_byte((uint8_t)((outcolor >> 11) << 1));
+	spi_command_byte((uint8_t)((outcolor >> 5) & 0x3F));
+	spi_command_byte((uint8_t)((outcolor << 1) & 0x3F));
+
+	// Fill color
+	spi_command_byte((uint8_t)((fillcolor >> 11) << 1));
+	spi_command_byte((uint8_t)((fillcolor >> 5) & 0x3F));
+	spi_command_byte((uint8_t)((fillcolor << 1) & 0x3F));
+
+	// Delay while the fill completes
+	systick_delayms(SSD1331_DELAYS_HWFILL); 
 }
 
 /*

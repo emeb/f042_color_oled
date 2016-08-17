@@ -17,8 +17,8 @@ void ssd1331_init(void);
 void ssd1331_xy(uint8_t x, uint8_t y);
 uint16_t ssd1331_getcolor(uint8_t r, uint8_t g, uint8_t b);
 void ssd1331_setcolor(uint16_t color);
-void ssd1331_drawLine(int16_t x0, int16_t y0, int16_t x1, int16_t y1, uint16_t color);
-void ssd1331_fillRect(uint16_t x, uint16_t y, uint16_t w, uint16_t h, uint16_t outcolor, uint16_t fillcolor);
+void ssd1331_drawLine(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint16_t color);
+void ssd1331_drawRect(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1, uint8_t fill, uint16_t outcolor, uint16_t fillcolor);
 void ssd1331_hsv2rgb(uint8_t rgb[], uint8_t hsv[]);
 
 #endif

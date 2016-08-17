@@ -56,7 +56,7 @@ int main(void)
 #endif
 	
 #if 0
-	/* test area fill */
+	/* test random rects */
 	for (;;)
 	{
 		r = rand()&0xff;
@@ -67,7 +67,7 @@ int main(void)
 		y0 = rand()%SSD1331_HEIGHT;
 		y1 = rand()%SSD1331_HEIGHT;
 		color = ssd1331_getcolor(r,g,b);
-		ssd1331_fillRect(x0, y0, x1, y1, color, 0);
+		ssd1331_drawRect(x0, y0, x1, y1, 1, color, color);
 		systick_delayms(20);
 	}
 #endif
@@ -78,7 +78,7 @@ int main(void)
 	{
 		for(x0=0;x0<8;x0++)
 		{
-			ssd1331_fillRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 0, 0);
+			ssd1331_drawRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 0, 0);
 			for(x=x0;x<SSD1331_WIDTH;x+=8)
 			{
 				color = ssd1331_getcolor(x<<1,255-(x<<1),0);
@@ -106,7 +106,7 @@ int main(void)
 
 #if 1
 	/* qix */
-	ssd1331_fillRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 0, 0);
+	ssd1331_drawRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 1, 0, 0);
 	hsv[0] = 0;
 	hsv[1] = 255;
 	hsv[2] = 255;
@@ -124,13 +124,15 @@ int main(void)
 	{
 		ssd1331_hsv2rgb(rgb, hsv);
 		color = ssd1331_getcolor(rgb[0], rgb[1], rgb[2]);
-		ssd1331_drawLine(x0[idx], y0[idx], x1[idx], y1[idx], color);
+		//ssd1331_drawLine(x0[idx], y0[idx], x1[idx], y1[idx], color);
+		ssd1331_drawRect(x0[idx], y0[idx], x1[idx], y1[idx], 0, color, 0);
 		nidx = (idx+1)%NUM_LINES;
+		systick_delayms(10);
 		if(nidx == 0) erase = 1;
 		if(erase)
 		{
-			systick_delayms(10);
-			ssd1331_drawLine(x0[nidx], y0[nidx], x1[nidx], y1[nidx], 0);
+			//ssd1331_drawLine(x0[nidx], y0[nidx], x1[nidx], y1[nidx], 0);
+			ssd1331_drawRect(x0[nidx], y0[nidx], x1[nidx], y1[nidx], 0, 0, 0);
 		}
 		hsv[0]++;
 		x0[nidx] = x0[idx]+dx0;
