@@ -66,7 +66,7 @@ main.bin: main.elf
 	ls -l main.elf main.bin
 
 main.elf: $(OBJECTS) $(LDSCRIPT)
-	$(CC) -o main.elf $(LDFLAGS) $(OBJECTS) -lnosys
+	$(CC) -o main.elf $(LDFLAGS) $(OBJECTS) -lnosys -lm
 
 %.o: %.c %.h
 	$(CC) $(CFLAGS) -c -o $@ $<
