@@ -4,6 +4,7 @@
  */
 
 #include <stdlib.h>
+#include <math.h>
 #include "stm32f0xx.h"
 #include "led.h"
 #include "systick.h"
@@ -13,12 +14,11 @@
 
 int main(void)
 {
-	uint8_t y;
-	//uint8_t x, y, x0, y0, x1, y1, r, g, b;
-	uint8_t x0[NUM_LINES], y0[NUM_LINES], x1[NUM_LINES], y1[NUM_LINES];
+	uint8_t x, y, x0, y0, x1, y1, r, g, b;
+	//uint8_t x0[NUM_LINES], y0[NUM_LINES], x1[NUM_LINES], y1[NUM_LINES];
 	uint8_t dx0, dy0, dx1, dy1, idx, nidx, erase;
 	uint8_t rgb[3], hsv[3];
-	uint16_t color;
+	uint16_t color, cr, cg, cb;
 	
 	/* initialize the hardware */
 	led_init();
@@ -152,7 +152,7 @@ int main(void)
 	}
 #endif
 
-#if 1
+#if 0
 	/* test text */
 	ssd1331_drawRect(0, 0, SSD1331_WIDTH, SSD1331_HEIGHT, 1, 0, 0);
 	color = ssd1331_getcolor(255, 0, 0);
@@ -174,6 +174,23 @@ int main(void)
 		systick_delayms(200);
 		ssd1331_copyRect(0, 8, SSD1331_WIDTH, SSD1331_HEIGHT, 0, 0);
 		ssd1331_drawstr(0, 56, "scroll", color, 0);
+	}
+#endif
+
+#if 1
+	/* test copyRect */
+	ssd1331_drawRect(0, 0, SSD1331_WIDTH-1, SSD1331_HEIGHT-1, 1, 0, 0);
+	cr = ssd1331_getcolor(255, 0, 0);
+	cg = ssd1331_getcolor(0, 255, 0);
+	cb = ssd1331_getcolor(0, 0, 255);
+	for(;;)
+	{
+		ssd1331_copyRect(1, 0, SSD1331_WIDTH-1, SSD1331_HEIGHT-1, 0, 0);
+		ssd1331_drawLine(SSD1331_WIDTH-1, 0, SSD1331_WIDTH-1, SSD1331_HEIGHT-1, 0);
+		ssd1331_drawPixel(SSD1331_WIDTH-1, 32-31*sinf(6.2832F*(float)y/128.0F + 0.0F), cr);
+		ssd1331_drawPixel(SSD1331_WIDTH-1, 32-31*sinf(6.2832F*(float)y/128.0F + 2.0944F), cg);
+		ssd1331_drawPixel(SSD1331_WIDTH-1, 32-31*sinf(6.2832F*(float)y/128.0F + 4.1888F), cb);
+		y = (y+1)&127;
 	}
 #endif
 
